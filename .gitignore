@@ -1,13 +1,85 @@
-# Python virtual environment and cache
-backend/venv/
-backend/.env
-**/__pycache__/
-**/*.pyc
-
-# Node.js dependencies and builds
-frontend/node_modules/
-frontend/.angular/
-frontend/dist/
-
-# OS specific files
+# ==========================================
+# Operating System / IDE Files
+# ==========================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+
+# ==========================================
+# Environment & Secrets (NEVER COMMIT)
+# ==========================================
+.env
+*.env
+.env.*
+!.env.example
+
+# ==========================================
+# Frontend (Angular & Node)
+# ==========================================
+# Dependencies
+frontend/node_modules/
+/node_modules/
+
+# Build outputs
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+
+# Angular / CLI caches
+frontend/.angular/
+.angular/
+
+# Logs & Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Misc Angular runtime files
+frontend/coverage/
+frontend/.sass-cache/
+
+# ==========================================
+# Backend (FastAPI / Python)
+# ==========================================
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+backend/__pycache__/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+backend/.venv/
+
+# Database files (SQLite / local DBs)
+*.db
+*.sqlite
+*.sqlite3
+
+# Python testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==========================================
+# Docker
+# ==========================================
+# Docker logs
+*.log

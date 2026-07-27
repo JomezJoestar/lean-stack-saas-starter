@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
+from sqlmodel import Session
+from app.database import get_session
 from app.services.stripe import StripeService
+from app.services.user import update_user_subscription_by_email
 
 router = APIRouter(prefix="/billing", tags=["Billing & Subscriptions"])
 
@@ -24,7 +27,8 @@ async def create_checkout(price_id: str, success_url: str, cancel_url: str):
 @router.post("/webhook")
 async def stripe_webhook(
     request: Request,
-    stripe_signature: str = Header(None, alias="stripe-signature")
+    stripe_signature: str = Header(None, alias="stripe-signature"),
+    db: Session = Depends(get_session)  # <--- Inject DB Session here
 ):
     if not stripe_signature:
         raise HTTPException(
@@ -42,18 +46,26 @@ async def stripe_webhook(
             detail=str(e)
         )
 
-    # Handle the event using attribute access or dict conversion
     event_type = event.type if hasattr(event, "type") else event["type"]
 
     if event_type == "checkout.session.completed":
         session = event.data.object
         
-        # Safely extract customer email and status using attribute dot-notation
         customer_details = getattr(session, "customer_details", None)
         customer_email = getattr(customer_details, "email", None) if customer_details else None
-        payment_status = getattr(session, "payment_status", None)
+        stripe_customer_id = getattr(session, "customer", None)
 
-        print(f"\n🎉 SUCCESS: Payment received for {customer_email}! Status: {payment_status}\n")
-        # TODO: Grant access in your database here!
+        if customer_email:
+            # Update the user record in the database
+            updated_user = update_user_subscription_by_email(
+                db=db,
+                email=customer_email,
+                stripe_customer_id=stripe_customer_id
+            )
+            
+            if updated_user:
+                print(f"\n🎉 SUCCESS: Activated premium status in DB for {customer_email}!\n")
+            else:
+                print(f"\n⚠️ Webhook received for {customer_email}, but user does not exist in DB yet.\n")
 
     return {"status": "success"}
