@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.models import User, UserCreate, UserRead
 from app.auth.security import hash_password, verify_password, create_access_token
+from app.auth.deps import get_current_user, require_premium_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -59,4 +60,26 @@ def login_user(
     return {
         "access_token": access_token,
         "token_type": "bearer"
+    }
+
+
+# 1. Protected Route: Any logged-in user can check their own profile
+@router.get("/me", response_model=UserRead)
+async def get_me(current_user: User = Depends(get_current_user)):
+    """
+    Get current logged-in user details.
+    Requires a valid JWT Bearer token.
+    """
+    return current_user
+
+
+# 2. Premium-Only Route: Only users with is_premium == True can access
+@router.get("/pro-feature")
+async def get_pro_feature(current_user: User = Depends(require_premium_user)):
+    """
+    Gated endpoint restricted to active subscribers/buyers.
+    """
+    return {
+        "message": f"Welcome to the VIP lounge, {current_user.email}!",
+        "status": "active_subscriber"
     }
