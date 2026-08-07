@@ -10,9 +10,10 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: str
     STRIPE_WEBHOOK_SECRET: str
 
-    # Configuration to read from .env file inside the backend directory
+    # Reads OS environment variables injected by Docker Compose,
+    # with fallbacks to .env in either current directory or parent directory.
     model_config = SettingsConfigDict(
-        env_file=".env", 
+        env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
         extra="ignore"  # Ignores extra environment variables from Docker
     )
