@@ -1,15 +1,27 @@
+version: '3.8'
+
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SECRET_KEY=${SECRET_KEY:-supersecretjwtkey}
+      - ALGORITHM=${ALGORITHM:-HS256}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
     env_file:
       - .env
     volumes:
       - ./backend:/app
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "4200:80"
     depends_on:
