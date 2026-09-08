@@ -36,3 +36,4 @@ bcrypt
 pyjwt
 pydantic-settings
 stripe
+psycopg2-binary>=2.9.9

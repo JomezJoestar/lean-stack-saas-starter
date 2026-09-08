@@ -1,22 +1,18 @@
 import os
-from collections.abc import Generator
 from sqlmodel import create_engine, SQLModel, Session
 
-# We'll use a local SQLite file named 'dev.db'
-sqlite_file_name = "dev.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./dev.db")
 
-# connect_args={"check_same_thread": False} is required specifically for SQLite 
-# to allow FastAPI's asynchronous multi-threaded requests to access it safely.
-engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
-def init_db() -> None:
-    """Creates the database tables based on our SQLModel metadata."""
+engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
+
+def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
-def get_session() -> Generator[Session, None, None]:
-    """FastAPI dependency that yields a database session per request 
-    and automatically closes it when the request is finished.
-    """
+# Alias to resolve the import in main.py
+init_db = create_db_and_tables
+
+def get_session():
     with Session(engine) as session:
         yield session
