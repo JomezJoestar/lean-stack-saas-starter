@@ -1,22 +1,28 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      - PYTHONUNBUFFERED=1
-      - SECRET_KEY=${SECRET_KEY:-supersecretjwtkey}
-      - ALGORITHM=${ALGORITHM:-HS256}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
     env_file:
       - .env
-    volumes:
-      - ./backend:/app
+    depends_on:
+      - db
 
   frontend:
     build:
@@ -26,3 +32,6 @@ services:
       - "4200:80"
     depends_on:
       - backend
+
+volumes:
+  postgres_data:
